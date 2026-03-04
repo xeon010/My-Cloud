@@ -4,7 +4,7 @@
 - FastAPI
 
 **Frontend**
-React.js
+- React.js
 
 **Containers**
 - Docker
