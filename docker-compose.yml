@@ -19,6 +19,7 @@ services:
       - MINIO_SECRET_KEY=minioadmin
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       postgres:
         condition: service_healthy # Wait for Postgres to be healthy before starting the backend
