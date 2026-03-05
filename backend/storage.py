@@ -8,4 +8,4 @@ minio_client = Minio(
     secure=False
 )
 
-BUCKET_NAME = "privatecloud"
+BUCKET_NAME = "mycloud"

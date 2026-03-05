@@ -6,6 +6,9 @@ export const appConfig = {
     endpoints: {
         health: "/health",
         postgres: "/postgres",
-        minio: "/minio"
+        minio: "/minio",
+        files: "/files",
+        upload: "/files/upload",
+        download: "/files/download"
     },
 };
