@@ -2,37 +2,54 @@ import { useState, useEffect } from 'react'
 import { appConfig } from './config'
 
 function App() {
-  const [health, setHealth] = useState(null)
-  const [postgres, setPostgres] = useState(null)
-  const [minio, setMinio] = useState(null)
+  const [files, setFiles] = useState([])
 
-  useEffect(() => {
-    fetch(`${appConfig.apiUrl}${appConfig.endpoints.health}`)
+  const fetchFiles = () => {
+    fetch(`${appConfig.apiUrl}${appConfig.endpoints.files}`)
       .then(res => res.json())
-      .then(data => setHealth(data.status))
-      .catch(() => setHealth('error'))
-  }, [])
+      .then(data => setFiles(data))
+  }
 
-  useEffect(() => {
-    fetch(`${appConfig.apiUrl}${appConfig.endpoints.postgres}`)
-      .then(res => res.json())
-      .then(data => setPostgres(data.status))
-      .catch(() => setPostgres('error'))
-  }, [])
+  useEffect(() => { fetchFiles() }, [])
 
-  useEffect(() => {
-    fetch(`${appConfig.apiUrl}${appConfig.endpoints.minio}`)
-      .then(res => res.json())
-      .then(data => setMinio(data.status))
-      .catch(() => setMinio('error'))
-  }, [])
+  const handleUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('file', file)
+    await fetch(`${appConfig.apiUrl}${appConfig.endpoints.upload}`, {
+      method: 'POST',
+      body: formData
+    })
+    fetchFiles()
+  }
+
+  const handleDelete = async (id) => {
+    await fetch(`${appConfig.apiUrl}/files/${id}`, { method: 'DELETE' })
+    fetchFiles()
+  }
+
+  const handleDownload = (id, name) => {
+    const url = `${appConfig.apiUrl}/files/download/${id}`
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name
+    a.click()
+  }
 
   return (
-    <div className="App">
-      <h1>MyCloud</h1>
-      <p>Backend API status: {health ?? 'checking...'}</p>
-      <p>PostgreSQL status: {postgres ?? 'checking...'}</p>
-      <p>MinIO status: {minio ?? 'checking...'}</p>
+    <div>
+      <h1>My Cloud</h1>
+      <input type="file" onChange={handleUpload} />
+      <ul>
+        {files.map(f => (
+          <li key={f.id}>
+            {f.name} ({f.size} bytes)
+            <button onClick={() => handleDelete(f.id)}>Delete</button>
+            <button onClick={() => handleDownload(f.id, f.name)}>Download</button>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

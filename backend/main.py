@@ -5,8 +5,11 @@ from database import engine
 from models.user import User, Base
 from database import get_db
 from storage import minio_client
+from models.file import File as FileModel
+from routers.file import router as file_router
 
 app = FastAPI()
+app.include_router(file_router)
 
 app.add_middleware(
     CORSMiddleware,
