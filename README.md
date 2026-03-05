@@ -1,3 +1,7 @@
+# **Self-hosted Cloud Solutions Made Simple**
+*Take back ownership of your data in the cloud*  
+An open-source, full stack solution to self-hosted and private cloud hosting.
+
 # Stack
 
 **Backend API Layer**
