@@ -1,0 +1,75 @@
+services:
+  frontend:
+    build: ./frontend
+    container_name: privatecloud_frontend
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+  backend:
+    build: ./backend
+    container_name: privatecloud_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/privatecloud
+      - MINIO_URL=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+    depends_on:
+      postgres:
+        condition: service_healthy # Wait for Postgres to be healthy before starting the backend
+      minio:
+        condition: service_healthy # Wait for Minio to be healthy before starting the backend
+  postgres:
+    image: postgres:16-alpine
+    container_name: privatecloud_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=privatecloud
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  minio:
+    image: minio/minio
+    container_name: privatecloud_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio_init:
+    image: minio/mc
+    container_name: privatecloud_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin;
+      mc mb --ignore-existing local/privatecloud;
+      exit 0;
+      "
+volumes:
+  postgres_data:
+  minio_data:

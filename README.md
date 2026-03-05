@@ -1,4 +1,4 @@
-# Stack:
+# Stack
 
 **Backend API Layer**
 - FastAPI
@@ -14,9 +14,3 @@
 
 **Object Storage**
 - MinIO
-
-**Networking**
-- Tailscale
-
-**Infrastructure as Code**
-- Terraform
