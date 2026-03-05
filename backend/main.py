@@ -1,12 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from auth import create_token
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from database import engine
-from models.user import User, Base
-from database import get_db
+from database import engine, Base
 from storage import minio_client
-from models.file import File as FileModel
 from routers.file import router as file_router
+import os
 
 app = FastAPI()
 app.include_router(file_router)
@@ -35,3 +35,11 @@ def check_postgres():
 def check_minio():
     minio_client.list_buckets()
     return {"status": "ok"}
+
+@app.post("/auth/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    if form_data.username != os.getenv("ADMIN_USERNAME") or \
+       form_data.password != os.getenv("ADMIN_PASSWORD"):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_token(form_data.username)
+    return {"access_token": token, "token_type": "bearer"}
